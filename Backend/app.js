@@ -6,6 +6,12 @@ import fileUpload from "express-fileupload";
 import { connection } from "./database/connection.js";
 import { errorMiddleware } from "./middlewares/error.js";
 import userRouter from "./router/userRoutes.js";
+import auctionItemRoutes from "./router/auctionItemRoutes.js";
+import bidRoutes from "./router/bidRoutes.js";
+import commissionRoutes from "./router/commissionRouter.js";
+import superAdminRouter from "./router/superAdminRoutes.js";
+import { endedAuctionCron } from "./automation/endedAuctionCron.js";
+import { verifyCommissionCron } from "./automation/verifyCommissionCron.js";
 
 const app = express();
 config({
@@ -31,7 +37,13 @@ app.use(
 );
 
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/auction", auctionItemRoutes);
+app.use("/api/v1/bid", bidRoutes);
+app.use("/api/v1/commission", commissionRoutes);
+app.use("/api/v1/superadmin", superAdminRouter);
 
+endedAuctionCron();
+verifyCommissionCron();
 connection();
 app.use(errorMiddleware);
 
