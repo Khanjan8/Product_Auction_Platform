@@ -6,6 +6,12 @@ import { FaGreaterThan } from "react-icons/fa";
 import { RiAuctionFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import io from "socket.io-client";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// ✅ Move this outside the component
+const socket = io("http://localhost:5000"); // Use your backend URL if different
 
 const AuctionItem = () => {
   const { id } = useParams();
@@ -18,11 +24,12 @@ const AuctionItem = () => {
   const dispatch = useDispatch();
 
   const [amount, setAmount] = useState(0);
+
   const handleBid = () => {
     const formData = new FormData();
     formData.append("amount", amount);
     dispatch(placeBid(id, formData));
-    dispatch(getAuctionDetail(id));
+    // ✅ Removed: dispatch(getAuctionDetail(id)); — already handled by socket
   };
 
   useEffect(() => {
@@ -32,9 +39,23 @@ const AuctionItem = () => {
     if (id) {
       dispatch(getAuctionDetail(id));
     }
-  }, [isAuthenticated]);
+
+    // ✅ Real-time bid listener
+    socket.on("bidPlaced", (data) => {
+      if (data.auctionId === id) {
+        toast.info("A new bid has been placed!");
+        dispatch(getAuctionDetail(id)); // Refresh auction details if it's the same auction
+      }
+    });
+
+    return () => {
+      socket.off("bidPlaced");
+    };
+  }, [id, isAuthenticated]);
+
   return (
     <>
+      <ToastContainer position="top-right" autoClose={2000} />
       <section className="w-full ml-0 m-0 h-fit px-5 pt-20 lg:pl-[320px] flex flex-col">
         <div className="text-[16px] flex flex-wrap gap-2 items-center">
           <Link

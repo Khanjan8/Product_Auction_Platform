@@ -60,6 +60,13 @@ export const placeBid = catchAsyncErrors(async (req, res, next) => {
     }
     await auctionItem.save();
 
+    // EMIT REAL-TIME EVENT HERE
+    global.io.emit("bidPlaced", {
+      auctionId: auctionItem._id,
+      currentBid: auctionItem.currentBid,
+      bids: auctionItem.bids,
+    });
+
     res.status(201).json({
       success: true,
       message: "Bid placed.",
