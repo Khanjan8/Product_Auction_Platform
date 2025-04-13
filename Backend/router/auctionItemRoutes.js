@@ -20,14 +20,14 @@ import {
   
   router.get("/allitems", getAllItems);
   
-  router.get("/:id", isAuthenticated, getAuctionDetails);
-  
   router.get(
     "/myitems",
     isAuthenticated,
     isAuthorized("Auctioneer"),
     getMyAuctionItems
   );
+
+  router.get("/:id", isAuthenticated, getAuctionDetails);
   
   router.delete(
     "/delete/:id",
